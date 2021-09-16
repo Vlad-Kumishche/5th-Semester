@@ -1,11 +1,9 @@
-# Лабораторные работы по программированию в пятом семестре
+# Лабораторные работы по программированию. Пятый семестр
 Учебные предметы:
 - Интерфейсы и переферийные устройства
 - Теоретические основы компьютерных сетей
-- Технологии разработки и тестирования ПО
 
-# Laboratory works on programming in the fifth semester
+# Laboratory works on programming. Fifth semester
 Academic subjects:
 - Interfaces and peripheral devices
 - Theoretical foundations of computer networks
-- Software development and testing technologies
