@@ -3,7 +3,7 @@
 - Интерфейсы и переферийные устройства
 - Теоретические основы компьютерных сетей
 - Технологии разработки и тестирования ПО
-- 
+
 # Laboratory works on programming in the fifth semester
 Academic subjects:
 - Interfaces and peripheral devices
