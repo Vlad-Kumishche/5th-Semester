@@ -1,7 +1,7 @@
 ﻿
 namespace com_ports_communication
 {
-    partial class Com
+    partial class ComForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -48,24 +48,26 @@ namespace com_ports_communication
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(898, 143);
             this.textBox1.TabIndex = 0;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(29, 15);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(43, 20);
+            this.label1.Size = new System.Drawing.Size(46, 20);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Input";
+            this.label1.Text = "Input:";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(29, 199);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(55, 20);
+            this.label2.Size = new System.Drawing.Size(58, 20);
             this.label2.TabIndex = 3;
-            this.label2.Text = "Output";
+            this.label2.Text = "Output:";
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // textBox2
@@ -81,9 +83,9 @@ namespace com_ports_communication
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(29, 384);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(140, 20);
+            this.label3.Size = new System.Drawing.Size(143, 20);
             this.label3.TabIndex = 5;
-            this.label3.Text = "Console and Debug";
+            this.label3.Text = "Console and Debug:";
             this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // textBox3
@@ -121,8 +123,9 @@ namespace com_ports_communication
             this.button2.Text = "Send";
             this.button2.UseVisualStyleBackColor = true;
             // 
-            // comboBox1
+            // BaudRateComboBox
             // 
+            this.BaudRateComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.BaudRateComboBox.FormattingEnabled = true;
             this.BaudRateComboBox.Items.AddRange(new object[] {
             "50",
@@ -140,14 +143,12 @@ namespace com_ports_communication
             "57600",
             "115200"});
             this.BaudRateComboBox.Location = new System.Drawing.Point(682, 484);
-            this.BaudRateComboBox.Name = "comboBox1";
+            this.BaudRateComboBox.Name = "BaudRateComboBox";
             this.BaudRateComboBox.Size = new System.Drawing.Size(151, 28);
             this.BaudRateComboBox.TabIndex = 12;
-            this.BaudRateComboBox.SelectedIndex = BaudRateComboBox.Items.IndexOf("9600");
-            this.BaudRateComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.BaudRateComboBox.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
-            // Com
+            // ComForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -162,7 +163,7 @@ namespace com_ports_communication
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox1);
-            this.Name = "Com";
+            this.Name = "ComForm";
             this.Text = "Com";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);

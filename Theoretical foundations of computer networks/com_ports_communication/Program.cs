@@ -17,7 +17,7 @@ namespace com_ports_communication
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Com());
+            Application.Run(new ComForm());
         }
     }
 }
