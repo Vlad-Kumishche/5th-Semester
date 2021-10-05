@@ -14,27 +14,33 @@ namespace com_ports_communication
         public delegate void ErrorHandler(string message);
         public event MessageHandler SendMessageEvent;
         public event MessageHandler ReceiveMessageEvent;
+        public event MessageHandler DebugMessageEvent;
         public event ErrorHandler ErrorEvent;
 
-        public bool OpenPort(string portName, int baudRate)
+        private string name;
+        public string Name
         {
-            bool isOpen = false;
-            try
+            get
             {
-                _serialPort = new SerialPort
-                {
-                    PortName = portName,
-                    BaudRate = baudRate
-                };
-                _serialPort.Open();
-                isOpen = true;
-                _serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
+                return name;
             }
-            catch (Exception ex)
+
+            private set
             {
-                ErrorEvent(ex.Message);
+                name = value;
             }
-            return isOpen;
+        }
+
+        public void OpenPort(string portName, int baudRate)
+        {
+            _serialPort = new SerialPort
+            {
+                PortName = portName,
+                BaudRate = baudRate
+            };
+            _serialPort.Open();
+            _serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPortDataReceived); 
+            Name = portName;
         }
 
         public string[] GetgetAvailablePorts()
@@ -42,7 +48,7 @@ namespace com_ports_communication
             return SerialPort.GetPortNames();
         }
 
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
@@ -57,9 +63,9 @@ namespace com_ports_communication
             }
         }
 
-        public void SerialPort_DataSend(string message)
+        public void SerialPortDataSend(string message)
         {
-            message = $"<{_serialPort.PortName}>: {message}\n";
+            message = message + Environment.NewLine;
             try
             {
                 byte[] data = Encoding.Unicode.GetBytes(message);

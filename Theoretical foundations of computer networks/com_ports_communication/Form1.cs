@@ -16,64 +16,99 @@ namespace com_ports_communication
         public ComForm()
         {
             InitializeComponent();
-            port = new ComPort();
 
+            port = new ComPort();
             port.SendMessageEvent += SendMessageHandler;
             port.ReceiveMessageEvent += ReceiveMessageHandler;
+            port.DebugMessageEvent += DebugMessageHandler;
             port.ErrorEvent += ErrorHandler;
 
-            string[] anwser = port.GetgetAvailablePorts();
-            foreach (string a in anwser)
+            BaudRateComboBox.SelectedIndex = BaudRateComboBox.Items.IndexOf("9600");
+            ControlAndDebug.Text = "";
+            PortOpeningFirstTime(int.Parse(BaudRateComboBox.Text));
+        }
+
+        public void PortOpeningFirstTime(int BaudRate)
+        {
+            try
             {
-                textBox1.Text += a + ' ';
+                port.OpenPort("COM1", BaudRate);
+                DebugMessageHandler("COM1 is open");
+            }
+            catch
+            {
+                try
+                {
+                    port.OpenPort("COM2", BaudRate);
+                    DebugMessageHandler("COM2 is open");
+                }
+                catch
+                {
+                    ErrorHandler("Close the application, check the COM1 and COM2 ports, then reopen this application");
+                }
+            }
+        }
+
+        public void AppendText(RichTextBox box, string text, Color color, bool AddNewLine = true)
+        {
+            if (AddNewLine)
+            {
+                text += Environment.NewLine;
             }
 
-            bool suc = port.OpenPort(anwser[0], 9600);
+            box.SelectionStart = box.TextLength;
+            box.SelectionLength = 0;
+            box.SelectionColor = color;
+            box.AppendText(text);
+            box.SelectionColor = box.ForeColor;
         }
 
         private void SendMessageHandler(string message)
         {
-            
+            Input.Clear();
+            Output.Text += message;
         }
 
         private void ReceiveMessageHandler(string message)
         {
-            
+            Output.Text += message;
+        }
+
+        private void DebugMessageHandler(string message)
+        {
+            AppendText(ControlAndDebug, message, Color.Black);
         }
 
         private void ErrorHandler(string message)
         {
-            MessageBox.Show(message);
+            AppendText(ControlAndDebug, message, Color.Red);
         }
 
-        private void label3_Click(object sender, EventArgs e)
+        private void BaudRateComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            port.ClosePort();
+            string portName = port.Name;
+            try
+            {
+                port.OpenPort(portName, int.Parse(BaudRateComboBox.Text));
+                DebugMessageHandler("Baudrate changed. Present value: " + BaudRateComboBox.Text);
+            }
+            catch
+            {
+                ErrorHandler("An error occurred when changing the baud rate of the " + portName + ". The port was closed. Check the status of the " + portName);
+            }
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        private void SendButton_Click(object sender, EventArgs e)
         {
-
+            port.SerialPortDataSend(Input.Text);
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void ClearButton_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
+            Input.Text = "";
+            Output.Text = "";
+            ControlAndDebug.Text = "";
         }
     }
 }
