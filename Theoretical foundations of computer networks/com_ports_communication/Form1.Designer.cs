@@ -166,7 +166,7 @@ namespace com_ports_communication
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Input);
             this.Name = "ComForm";
-            this.Text = "Serial Port Communication";
+            this.Text = "Serial Ports Communication";
             this.ResumeLayout(false);
             this.PerformLayout();
 

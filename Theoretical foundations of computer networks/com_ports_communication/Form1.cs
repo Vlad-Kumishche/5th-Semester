@@ -33,18 +33,18 @@ namespace com_ports_communication
             try
             {
                 port.OpenPort("COM1", BaudRate);
-                DebugMessageHandler("COM1 is open");
+                DebugMessageHandler("COM1 is opened");
             }
             catch
             {
                 try
                 {
                     port.OpenPort("COM2", BaudRate);
-                    DebugMessageHandler("COM2 is open");
+                    DebugMessageHandler("COM2 is opened");
                 }
                 catch
                 {
-                    ErrorHandler("Close the application, check the COM1 and COM2 ports, then reopen this application");
+                    ErrorHandler("Paired ports COM1 and COM2 were not found. Check COM1 and COM2 ports, then reopen this application.");
                 }
             }
         }
@@ -66,7 +66,6 @@ namespace com_ports_communication
         private void SendMessageHandler(string message)
         {
             Input.Clear();
-            Output.Text += message;
         }
 
         private void ReceiveMessageHandler(string message)
