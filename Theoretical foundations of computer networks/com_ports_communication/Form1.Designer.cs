@@ -49,6 +49,7 @@ namespace com_ports_communication
             this.Input.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.Input.Size = new System.Drawing.Size(634, 143);
             this.Input.TabIndex = 0;
+            this.Input.TextChanged += new System.EventHandler(this.Input_TextChanged);
             // 
             // label1
             // 
@@ -122,10 +123,6 @@ namespace com_ports_communication
             this.BaudRateComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.BaudRateComboBox.FormattingEnabled = true;
             this.BaudRateComboBox.Items.AddRange(new object[] {
-            "50",
-            "75",
-            "110",
-            "150",
             "300",
             "600",
             "1200",

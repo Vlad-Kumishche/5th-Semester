@@ -17,7 +17,7 @@ namespace com_ports_communication
         {
             InitializeComponent();
 
-            port = new ComPort();
+            port = new ComPort("00011001");
             port.SendMessageEvent += SendMessageHandler;
             port.ReceiveMessageEvent += ReceiveMessageHandler;
             port.DebugMessageEvent += DebugMessageHandler;
@@ -33,14 +33,14 @@ namespace com_ports_communication
             try
             {
                 port.OpenPort("COM1", BaudRate);
-                DebugMessageHandler("COM1 is opened");
+                DebugMessageHandler("COM1 is open");
             }
             catch
             {
                 try
                 {
                     port.OpenPort("COM2", BaudRate);
-                    DebugMessageHandler("COM2 is opened");
+                    DebugMessageHandler("COM2 is open");
                 }
                 catch
                 {
@@ -73,9 +73,17 @@ namespace com_ports_communication
             Output.Text += message;
         }
 
-        private void DebugMessageHandler(string message)
+        private void DebugMessageHandler(string message, string color = "black", bool AddNewLine = true)
         {
-            AppendText(ControlAndDebug, message, Color.Black);
+            Color Color = color switch
+            {
+                "black" => Color.Black,
+                "red" => Color.Red,
+                "green" => Color.Green,
+                _ => throw new ArgumentOutOfRangeException(nameof(color)),
+            };
+
+            AppendText(ControlAndDebug, message, Color, AddNewLine);
         }
 
         private void ErrorHandler(string message)
@@ -108,6 +116,11 @@ namespace com_ports_communication
             Input.Text = "";
             Output.Text = "";
             ControlAndDebug.Text = "";
+        }
+
+        private void Input_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
