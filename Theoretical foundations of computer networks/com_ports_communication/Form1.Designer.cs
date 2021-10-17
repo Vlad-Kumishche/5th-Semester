@@ -162,6 +162,10 @@ namespace com_ports_communication
             this.Controls.Add(this.Output);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Input);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(701, 650);
+            this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(701, 650);
             this.Name = "ComForm";
             this.Text = "Serial Ports Communication";
             this.ResumeLayout(false);
