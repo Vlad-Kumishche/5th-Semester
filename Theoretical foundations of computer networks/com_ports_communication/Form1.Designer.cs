@@ -49,7 +49,6 @@ namespace com_ports_communication
             this.Input.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.Input.Size = new System.Drawing.Size(634, 143);
             this.Input.TabIndex = 0;
-            this.Input.TextChanged += new System.EventHandler(this.Input_TextChanged);
             // 
             // label1
             // 
@@ -141,9 +140,11 @@ namespace com_ports_communication
             // 
             // ControlAndDebug
             // 
+            this.ControlAndDebug.BackColor = System.Drawing.SystemColors.HighlightText;
+            this.ControlAndDebug.ReadOnly = true;
             this.ControlAndDebug.Location = new System.Drawing.Point(26, 415);
             this.ControlAndDebug.Name = "ControlAndDebug";
-            this.ControlAndDebug.Size = new System.Drawing.Size(379, 156);
+            this.ControlAndDebug.Size = new System.Drawing.Size(379, 275);
             this.ControlAndDebug.TabIndex = 13;
             this.ControlAndDebug.Text = "";
             // 
@@ -151,7 +152,7 @@ namespace com_ports_communication
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(683, 603);
+            this.ClientSize = new System.Drawing.Size(683, 716);
             this.Controls.Add(this.ControlAndDebug);
             this.Controls.Add(this.BaudRateComboBox);
             this.Controls.Add(this.SendButton);
@@ -163,9 +164,9 @@ namespace com_ports_communication
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Input);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(701, 650);
+            this.MaximumSize = new System.Drawing.Size(701, 763);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(701, 650);
+            this.MinimumSize = new System.Drawing.Size(701, 763);
             this.Name = "ComForm";
             this.Text = "Serial Ports Communication";
             this.ResumeLayout(false);

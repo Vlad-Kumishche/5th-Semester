@@ -19,7 +19,8 @@ namespace com_ports_communication
         public event DebugMessageHandler DebugMessageEvent;
         public event ErrorHandler ErrorEvent;
         private readonly string bitStuffingFlag;
-        private string messageBuffer;
+        private string sentMessagesBuffer;
+        private string receivedMessagesBuffer;
         private string name;
         public string Name
         {
@@ -34,14 +35,11 @@ namespace com_ports_communication
             }
         }
 
-        public ComPort(string bitStuffingFlag)
+        public ComPort()
         {
-            if (!IsItBinarySequence(bitStuffingFlag) || bitStuffingFlag.Length != 8)
-            {
-                throw new ArgumentOutOfRangeException(nameof(bitStuffingFlag));
-            }
-
-            this.bitStuffingFlag = bitStuffingFlag;
+            this.bitStuffingFlag = "00011001";
+            this.sentMessagesBuffer = string.Empty;
+            this.receivedMessagesBuffer = string.Empty;
         }
 
         public void OpenPort(string portName, int baudRate)
@@ -64,8 +62,7 @@ namespace com_ports_communication
                 _serialPort.Read(data, 0, data.Length);
 
                 string message = DeBitStuffing(Encoding.Unicode.GetString(data));
-                ReceiveMessageEvent(message);
-                DebugMessageEvent("Message received: " + message);
+                ReceiveMessageEvent(message + Environment.NewLine);
             }
             catch (Exception ex)
             {
@@ -81,19 +78,23 @@ namespace com_ports_communication
                 return;
             }
 
-            if (!BitStuffing(message))
+            if (message == string.Empty)
             {
-                SendMessageEvent();
+                ErrorEvent("Blank messages are prohibited");
                 return;
             }
 
+            DebugMessageEvent("Input: " + message);
+
+            message = BitStuffing(message);
+
             try
             {
-                byte[] data = Encoding.Unicode.GetBytes(messageBuffer);
+                byte[] data = Encoding.Unicode.GetBytes(message);
                 _serialPort.Write(data, 0, data.Length);
 
-                SendMessageEvent(messageBuffer);
-                messageBuffer = string.Empty;
+                SendMessageEvent(message);
+                message = string.Empty;
             }
             catch (Exception ex)
             {
@@ -101,44 +102,84 @@ namespace com_ports_communication
             }
         }
 
-        private bool BitStuffing(string message)
+        private string BitStuffing(string message)
         {
-            DebugMessageEvent("Added to buffer: " + message);
-            messageBuffer += message;
-            if (messageBuffer.Length < 8)
+            string result = sentMessagesBuffer + message;
+            bool bitStuffingHappened = false;
+            if (result.Length >= 7)
             {
-                return false;
-            }
-
-            DebugMessageEvent("Before bit-stuffing: " + messageBuffer, "black");
-            DebugMessageEvent("After bit-stuffing:   ", "black", false);
-
-            int currentIndex = 0;
-            while (currentIndex < messageBuffer.Length)
-            {
-                int index = messageBuffer.IndexOf(bitStuffingFlag, currentIndex);
-                if (index == -1)
+                int currentIndex = 0;
+                while (currentIndex < result.Length)
                 {
-                    DebugMessageEvent(messageBuffer[currentIndex..messageBuffer.Length], "black", false);
-                    currentIndex = messageBuffer.Length;
-                }
-                else
-                {
-                    DebugMessageEvent(messageBuffer[currentIndex..index], "black", false);
-                    DebugMessageEvent(messageBuffer[index..(index + 8)], "green", false);
-                    messageBuffer = messageBuffer.Insert(index + 8, "1");
-                    DebugMessageEvent(messageBuffer[index + 8].ToString(), "red", false);
-                    currentIndex = index + 9;
+                    int index = result.IndexOf(bitStuffingFlag[..7], currentIndex);
+                    if (index == -1)
+                    {
+                        currentIndex = result.Length;
+                    }
+                    else
+                    {
+                        result = result.Insert(index + 7, "[0]");
+                        currentIndex = index + 5;
+                        bitStuffingHappened = true;
+                    }
                 }
             }
 
-            DebugMessageEvent();
-            return true;
+            result = result[sentMessagesBuffer.Length..];
+            sentMessagesBuffer += message;
+            if (sentMessagesBuffer.Length >= 7)
+            {
+                sentMessagesBuffer = sentMessagesBuffer[^7..];
+                if (sentMessagesBuffer == bitStuffingFlag[..7])
+                {
+                    sentMessagesBuffer = sentMessagesBuffer[^6..];
+                }
+            }
+
+            if (bitStuffingHappened)
+            {
+                DebugMessageEvent("After bit-stuffing: " + result, "black");
+            }
+
+            result = result.Replace("[", "");
+            result = result.Replace("]", "");
+            return result;
         }
 
         private string DeBitStuffing(string message)
         {
-            return message.Replace(bitStuffingFlag + "1", bitStuffingFlag);
+            string result = receivedMessagesBuffer + message;
+            bool needForDeBitStuffing = result.Length >= 8;
+            if (needForDeBitStuffing)
+            {
+                int currentIndex = 0;
+                while (currentIndex < result.Length)
+                {
+                    int index = result.IndexOf(bitStuffingFlag[..7] + "0", currentIndex);
+                    if (index == -1)
+                    {
+                        currentIndex = result.Length;
+                    }
+                    else
+                    {
+                        result = result.Remove(index + 7, 1);
+                        currentIndex = index + 5;
+                    }
+                }
+            }
+
+            result = result[receivedMessagesBuffer.Length..];
+            receivedMessagesBuffer += result;
+            if (receivedMessagesBuffer.Length >= 7)
+            {
+                receivedMessagesBuffer = receivedMessagesBuffer[^7..];
+                if (receivedMessagesBuffer == bitStuffingFlag[..7])
+                {
+                    receivedMessagesBuffer = receivedMessagesBuffer[^6..];
+                }
+            }
+
+            return result;
         }
 
         private bool IsItBinarySequence(string message)

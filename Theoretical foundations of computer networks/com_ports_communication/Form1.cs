@@ -17,7 +17,7 @@ namespace com_ports_communication
         {
             InitializeComponent();
 
-            port = new ComPort("00011001");
+            port = new ComPort();
             port.SendMessageEvent += SendMessageHandler;
             port.ReceiveMessageEvent += ReceiveMessageHandler;
             port.DebugMessageEvent += DebugMessageHandler;
@@ -34,6 +34,7 @@ namespace com_ports_communication
             {
                 port.OpenPort("COM1", BaudRate);
                 DebugMessageHandler("COM1 is open");
+                DebugMessageHandler("Flag: 00011001");
             }
             catch
             {
@@ -41,6 +42,7 @@ namespace com_ports_communication
                 {
                     port.OpenPort("COM2", BaudRate);
                     DebugMessageHandler("COM2 is open");
+                    DebugMessageHandler("Flag: 00011001");
                 }
                 catch
                 {
@@ -61,6 +63,8 @@ namespace com_ports_communication
             box.SelectionColor = color;
             box.AppendText(text);
             box.SelectionColor = box.ForeColor;
+            box.SelectionStart = box.Text.Length;
+            box.ScrollToCaret();
         }
 
         private void SendMessageHandler(string message)
@@ -71,6 +75,8 @@ namespace com_ports_communication
         private void ReceiveMessageHandler(string message)
         {
             Output.Text += message;
+            Output.SelectionStart = Output.Text.Length;
+            Output.ScrollToCaret();
         }
 
         private void DebugMessageHandler(string message, string color = "black", bool AddNewLine = true)
@@ -116,11 +122,6 @@ namespace com_ports_communication
             Input.Text = "";
             Output.Text = "";
             ControlAndDebug.Text = "";
-        }
-
-        private void Input_TextChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
