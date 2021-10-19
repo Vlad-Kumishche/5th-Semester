@@ -131,16 +131,7 @@ namespace com_ports_communication
                 debug[i] -= sentMessagesBuffer.Length;
             }
 
-            sentMessagesBuffer += message;
-            if (sentMessagesBuffer.Length >= 7)
-            {
-                sentMessagesBuffer = sentMessagesBuffer[^7..];
-                if (sentMessagesBuffer == bitStuffingFlag[..7])
-                {
-                    sentMessagesBuffer = sentMessagesBuffer[^6..];
-                }
-            }
-
+            MessagesBufferUpdate(ref sentMessagesBuffer, ref result);
             if (bitStuffingHappened)
             {
                 DebugMessageEvent("After bit-stuffing: ", "black", false);
@@ -153,16 +144,13 @@ namespace com_ports_communication
                 DebugMessageEvent();
             }
 
-            result = result.Replace("[", "");
-            result = result.Replace("]", "");
             return result;
         }
 
         private string DeBitStuffing(string message)
         {
             string result = receivedMessagesBuffer + message;
-            bool needForDeBitStuffing = result.Length >= 8;
-            if (needForDeBitStuffing)
+            if (result.Length >= 8)
             {
                 int currentIndex = 0;
                 while (currentIndex < result.Length)
@@ -181,17 +169,21 @@ namespace com_ports_communication
             }
 
             result = result[receivedMessagesBuffer.Length..];
-            receivedMessagesBuffer += result;
-            if (receivedMessagesBuffer.Length >= 7)
+            MessagesBufferUpdate(ref receivedMessagesBuffer, ref result);
+            return result;
+        }
+
+        private void MessagesBufferUpdate(ref string buffer, ref string message)
+        {
+            buffer += message;
+            if (buffer.Length >= 7)
             {
-                receivedMessagesBuffer = receivedMessagesBuffer[^7..];
-                if (receivedMessagesBuffer == bitStuffingFlag[..7])
+                buffer = buffer[^7..];
+                if (buffer == bitStuffingFlag[..7])
                 {
-                    receivedMessagesBuffer = receivedMessagesBuffer[^6..];
+                    buffer = buffer[^6..];
                 }
             }
-
-            return result;
         }
 
         private bool IsItBinarySequence(string message)
