@@ -85,9 +85,7 @@ namespace com_ports_communication
             }
 
             DebugMessageEvent("Input: " + message);
-
             message = BitStuffing(message);
-
             try
             {
                 byte[] data = Encoding.Unicode.GetBytes(message);
@@ -105,6 +103,7 @@ namespace com_ports_communication
         private string BitStuffing(string message)
         {
             string result = sentMessagesBuffer + message;
+            List<int> debug = new List<int>();
             bool bitStuffingHappened = false;
             if (result.Length >= 7)
             {
@@ -118,14 +117,20 @@ namespace com_ports_communication
                     }
                     else
                     {
-                        result = result.Insert(index + 7, "[0]");
-                        currentIndex = index + 5;
+                        result = result.Insert(index + 7, "0");
+                        debug.Add(index + 7);
+                        currentIndex = index + 6;
                         bitStuffingHappened = true;
                     }
                 }
             }
 
             result = result[sentMessagesBuffer.Length..];
+            for (int i = 0; i < debug.Count; i++)
+            {
+                debug[i] -= sentMessagesBuffer.Length;
+            }
+
             sentMessagesBuffer += message;
             if (sentMessagesBuffer.Length >= 7)
             {
@@ -138,7 +143,14 @@ namespace com_ports_communication
 
             if (bitStuffingHappened)
             {
-                DebugMessageEvent("After bit-stuffing: " + result, "black");
+                DebugMessageEvent("After bit-stuffing: ", "black", false);
+                for (int i = 0; i < result.Length; i++)
+                {
+                    string color = debug.Contains(i) ? "red" : "black";
+                    DebugMessageEvent(result[i].ToString(), color, false);
+                }
+
+                DebugMessageEvent();
             }
 
             result = result.Replace("[", "");
@@ -191,6 +203,7 @@ namespace com_ports_communication
                     return false;
                 }
             }
+
             return true;
         }
 
