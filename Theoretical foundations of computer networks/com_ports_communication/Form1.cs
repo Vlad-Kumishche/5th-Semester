@@ -33,14 +33,16 @@ namespace com_ports_communication
             try
             {
                 port.OpenPort("COM1", BaudRate);
-                DebugMessageHandler("COM1 is opened");
+                DebugMessageHandler("COM1 is open");
+                DebugMessageHandler("Flag: 00011001");
             }
             catch
             {
                 try
                 {
                     port.OpenPort("COM2", BaudRate);
-                    DebugMessageHandler("COM2 is opened");
+                    DebugMessageHandler("COM2 is open");
+                    DebugMessageHandler("Flag: 00011001");
                 }
                 catch
                 {
@@ -61,6 +63,8 @@ namespace com_ports_communication
             box.SelectionColor = color;
             box.AppendText(text);
             box.SelectionColor = box.ForeColor;
+            box.SelectionStart = box.Text.Length;
+            box.ScrollToCaret();
         }
 
         private void SendMessageHandler(string message)
@@ -71,11 +75,21 @@ namespace com_ports_communication
         private void ReceiveMessageHandler(string message)
         {
             Output.Text += message;
+            Output.SelectionStart = Output.Text.Length;
+            Output.ScrollToCaret();
         }
 
-        private void DebugMessageHandler(string message)
+        private void DebugMessageHandler(string message, string color = "black", bool AddNewLine = true)
         {
-            AppendText(ControlAndDebug, message, Color.Black);
+            Color Color = color switch
+            {
+                "black" => Color.Black,
+                "red" => Color.Red,
+                "green" => Color.Green,
+                _ => throw new ArgumentOutOfRangeException(nameof(color)),
+            };
+
+            AppendText(ControlAndDebug, message, Color, AddNewLine);
         }
 
         private void ErrorHandler(string message)

@@ -44,10 +44,9 @@ namespace com_ports_communication
             // Input
             // 
             this.Input.Location = new System.Drawing.Point(26, 45);
-            this.Input.Multiline = true;
             this.Input.Name = "Input";
             this.Input.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.Input.Size = new System.Drawing.Size(634, 143);
+            this.Input.Size = new System.Drawing.Size(634, 27);
             this.Input.TabIndex = 0;
             // 
             // label1
@@ -62,7 +61,7 @@ namespace com_ports_communication
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(29, 199);
+            this.label2.Location = new System.Drawing.Point(29, 79);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(58, 20);
             this.label2.TabIndex = 3;
@@ -71,7 +70,7 @@ namespace com_ports_communication
             // Output
             // 
             this.Output.BackColor = System.Drawing.SystemColors.HighlightText;
-            this.Output.Location = new System.Drawing.Point(26, 229);
+            this.Output.Location = new System.Drawing.Point(26, 109);
             this.Output.Multiline = true;
             this.Output.Name = "Output";
             this.Output.ReadOnly = true;
@@ -82,7 +81,7 @@ namespace com_ports_communication
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(29, 384);
+            this.label3.Location = new System.Drawing.Point(29, 264);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(139, 20);
             this.label3.TabIndex = 5;
@@ -91,7 +90,7 @@ namespace com_ports_communication
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(414, 457);
+            this.label4.Location = new System.Drawing.Point(414, 337);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(73, 20);
             this.label4.TabIndex = 6;
@@ -99,7 +98,7 @@ namespace com_ports_communication
             // 
             // ClearButton
             // 
-            this.ClearButton.Location = new System.Drawing.Point(418, 415);
+            this.ClearButton.Location = new System.Drawing.Point(418, 295);
             this.ClearButton.Name = "ClearButton";
             this.ClearButton.Size = new System.Drawing.Size(94, 29);
             this.ClearButton.TabIndex = 10;
@@ -109,7 +108,7 @@ namespace com_ports_communication
             // 
             // SendButton
             // 
-            this.SendButton.Location = new System.Drawing.Point(566, 415);
+            this.SendButton.Location = new System.Drawing.Point(566, 295);
             this.SendButton.Name = "SendButton";
             this.SendButton.Size = new System.Drawing.Size(94, 29);
             this.SendButton.TabIndex = 11;
@@ -122,10 +121,6 @@ namespace com_ports_communication
             this.BaudRateComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.BaudRateComboBox.FormattingEnabled = true;
             this.BaudRateComboBox.Items.AddRange(new object[] {
-            "50",
-            "75",
-            "110",
-            "150",
             "300",
             "600",
             "1200",
@@ -136,7 +131,7 @@ namespace com_ports_communication
             "38400",
             "57600",
             "115200"});
-            this.BaudRateComboBox.Location = new System.Drawing.Point(418, 485);
+            this.BaudRateComboBox.Location = new System.Drawing.Point(418, 365);
             this.BaudRateComboBox.Name = "BaudRateComboBox";
             this.BaudRateComboBox.Size = new System.Drawing.Size(151, 28);
             this.BaudRateComboBox.TabIndex = 12;
@@ -144,9 +139,11 @@ namespace com_ports_communication
             // 
             // ControlAndDebug
             // 
-            this.ControlAndDebug.Location = new System.Drawing.Point(26, 415);
+            this.ControlAndDebug.BackColor = System.Drawing.SystemColors.HighlightText;
+            this.ControlAndDebug.Location = new System.Drawing.Point(26, 295);
             this.ControlAndDebug.Name = "ControlAndDebug";
-            this.ControlAndDebug.Size = new System.Drawing.Size(379, 156);
+            this.ControlAndDebug.ReadOnly = true;
+            this.ControlAndDebug.Size = new System.Drawing.Size(379, 275);
             this.ControlAndDebug.TabIndex = 13;
             this.ControlAndDebug.Text = "";
             // 
@@ -154,7 +151,7 @@ namespace com_ports_communication
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(683, 603);
+            this.ClientSize = new System.Drawing.Size(683, 599);
             this.Controls.Add(this.ControlAndDebug);
             this.Controls.Add(this.BaudRateComboBox);
             this.Controls.Add(this.SendButton);
@@ -165,6 +162,10 @@ namespace com_ports_communication
             this.Controls.Add(this.Output);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Input);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(701, 646);
+            this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(701, 646);
             this.Name = "ComForm";
             this.Text = "Serial Ports Communication";
             this.ResumeLayout(false);
