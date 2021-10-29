@@ -86,6 +86,7 @@ namespace com_ports_communication
                 "black" => Color.Black,
                 "red" => Color.Red,
                 "green" => Color.Green,
+                "orange" => Color.DarkOrange,
                 _ => throw new ArgumentOutOfRangeException(nameof(color)),
             };
 
