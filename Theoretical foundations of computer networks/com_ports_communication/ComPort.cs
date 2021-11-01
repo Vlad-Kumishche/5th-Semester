@@ -22,6 +22,7 @@ namespace com_ports_communication
         private readonly string bitStuffingFlag;
         private readonly int frameLength;
         private readonly int frameLengthL;
+        static object locker = new object();
         private string sentMessagesBuffer;
         private string receivedMessagesBuffer;
         private string name;
@@ -61,108 +62,177 @@ namespace com_ports_communication
 
         private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            try
+            lock (locker)
             {
-                byte[] data = new byte[_serialPort.BytesToRead];
-                _serialPort.Read(data, 0, data.Length);
 
-                string message = DeBitStuffing(Encoding.Unicode.GetString(data));
-                int?[] errorPositions = new int?[] { null, null };
-                message = GenerateError(message, ref errorPositions);
-
-                if (errorPositions[0] is not null && errorPositions[1] is not null)
+                try
                 {
-                    int firstError, secondError;
-                    if (errorPositions[0] < errorPositions[1])
+                    byte[] data = new byte[_serialPort.BytesToRead];
+                    _serialPort.Read(data, 0, data.Length);
+
+                    string message = DeBitStuffing(Encoding.Unicode.GetString(data));
+
+                    if (message == Environment.NewLine)
+                    {
+                        ReceiveMessageEvent(Environment.NewLine);
+                        return;
+                    }
+
+                    string len = message[^5..];
+                    int length = Convert.ToInt32(len, 2);
+                    message = message[..^5];
+                    int?[] errorPositions = new int?[] { null, null };
+                    message = GenerateError(message, ref errorPositions);
+                    int firstError = 0, secondError = 0;
+                    if (errorPositions[0] is not null && errorPositions[1] is not null)
+                    {
+                        if (errorPositions[0] < errorPositions[1])
+                        {
+                            firstError = (int)errorPositions[0];
+                            secondError = (int)errorPositions[1];
+
+                        }
+                        else
+                        {
+                            firstError = (int)errorPositions[1];
+                            secondError = (int)errorPositions[0];
+                        }
+
+                        DebugMessageEvent(message[..(firstError + 1)], "black", false);
+                        DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "red", false);
+                        DebugMessageEvent(message[(firstError + 2)..(secondError + 1)], "black", false);
+                        DebugMessageEvent(message[(secondError + 1)..(secondError + 2)], "red", false);
+                        DebugMessageEvent(message[(secondError + 2)..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                    }
+                    else if (errorPositions[0] is not null && errorPositions[1] is null)
                     {
                         firstError = (int)errorPositions[0];
-                        secondError = (int)errorPositions[1];
-
+                        DebugMessageEvent(message[..(firstError + 1)], "black", false);
+                        DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "red", false);
+                        DebugMessageEvent(message[(firstError + 2)..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
                     }
                     else
                     {
-                        firstError = (int)errorPositions[1];
-                        secondError = (int)errorPositions[0];
+                        DebugMessageEvent(message[..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
                     }
 
-                    DebugMessageEvent(message[..(firstError + 1)], "black", false);
-                    DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "red", false);
-                    DebugMessageEvent(message[(firstError + 2)..(secondError + 1)], "black", false);
-                    DebugMessageEvent(message[(secondError + 1)..(secondError + 2)], "red", false);
-                    DebugMessageEvent(message[(secondError + 2)..this.frameLength], "black", false);
-                    DebugMessageEvent(":", "black", false);
-                    DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
-                    DebugMessageEvent(":", "black", false);
-                    DebugMessageEvent(message[(this.frameLength + 1)..], "green");
-                }
-                else if (errorPositions[0] is not null && errorPositions[1] is null)
-                {
-                    int firstError = (int)errorPositions[0];
-                    DebugMessageEvent(message[..(firstError + 1)], "black", false);
-                    DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "red", false);
-                    DebugMessageEvent(message[(firstError + 2)..this.frameLength], "black", false);
-                    DebugMessageEvent(":", "black", false);
-                    DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
-                    DebugMessageEvent(":", "black", false);
-                    DebugMessageEvent(message[(this.frameLength + 1)..], "green");
-                }
-                else
-                {
-                    DebugMessageEvent(message[..this.frameLength], "black", false);
-                    DebugMessageEvent(":", "black", false);
-                    DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
-                    DebugMessageEvent(":", "black", false);
-                    DebugMessageEvent(message[(this.frameLength + 1)..], "green");
-                }
+                    //message = "1110010100111010011001011" + message[^6..];
 
-                //message = "1110010100111010011001011" + message[^6..];
+                    //DebugMessageEvent("Message after error:\r\n" + message);
+                    string receivedСode = message[^6..];
+                    message = GenerateHammingCode(message[..this.frameLength]);
 
-                //DebugMessageEvent("Message after error:\r\n" + message);
-                string receivedСode = message[^6..];
-                message = GenerateHammingCode(message[..this.frameLength]);
+                    DebugMessageEvent("Hamming's code is calculated:");
+                    if (errorPositions[0] is not null && errorPositions[1] is not null)
+                    {
+                        if (errorPositions[0] < errorPositions[1])
+                        {
+                            firstError = (int)errorPositions[0];
+                            secondError = (int)errorPositions[1];
 
-                DebugMessageEvent("Hamming's code is calculated:\r\n" + message[..this.frameLength], "black", false);
-                DebugMessageEvent(":", "black", false);
-                DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
-                DebugMessageEvent(":", "black", false);
-                DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                        }
+                        else
+                        {
+                            firstError = (int)errorPositions[1];
+                            secondError = (int)errorPositions[0];
+                        }
 
-                string calculatedСode = message[^6..];
-                //DebugMessageEvent("receivedСode:\r\n" + receivedСode + "\r\ncalculatedСode:\r\n" + calculatedСode);
-                int receivedСodeNumber = Convert.ToInt32(receivedСode[1..], 2);
-                int calculatedСodeNumber = Convert.ToInt32(calculatedСode[1..], 2);
-                int difference = receivedСodeNumber ^ calculatedСodeNumber;
-                string differenceB = Convert.ToString(difference, 2);
-                if (difference != 0 && receivedСode[0] != calculatedСode[0])  // single error
-                {
-                    DebugMessageEvent("Single error detected.");
-                    char bit = message[difference - 1];
-                    message = message.Remove(difference - 1, 1);
-                    message = message.Insert(difference - 1, (bit == '1' ? '0' : '1').ToString());
+                        DebugMessageEvent(message[..(firstError + 1)], "black", false);
+                        DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "red", false);
+                        DebugMessageEvent(message[(firstError + 2)..(secondError + 1)], "black", false);
+                        DebugMessageEvent(message[(secondError + 1)..(secondError + 2)], "red", false);
+                        DebugMessageEvent(message[(secondError + 2)..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                    }
+                    else if (errorPositions[0] is not null && errorPositions[1] is null)
+                    {
+                        firstError = (int)errorPositions[0];
+                        DebugMessageEvent(message[..(firstError + 1)], "black", false);
+                        DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "red", false);
+                        DebugMessageEvent(message[(firstError + 2)..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                    }
+                    else
+                    {
+                        DebugMessageEvent(message[..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                    }
 
-                    DebugMessageEvent("Message after recovery:");
-                    DebugMessageEvent(message[..(difference - 1)], "black", false);
-                    DebugMessageEvent(message[(difference - 1)..difference], "green", false);
-                    DebugMessageEvent(message[difference..this.frameLength], "black");
-                    ReceiveMessageEvent(message[..this.frameLength] + Environment.NewLine);
+                    string calculatedСode = message[^6..];
+                    //DebugMessageEvent("receivedСode:\r\n" + receivedСode + "\r\ncalculatedСode:\r\n" + calculatedСode);
+                    int receivedСodeNumber = Convert.ToInt32(receivedСode[1..], 2);
+                    int calculatedСodeNumber = Convert.ToInt32(calculatedСode[1..], 2);
+                    int difference = receivedСodeNumber ^ calculatedСodeNumber;
+                    string differenceB = Convert.ToString(difference, 2);
+                    if (difference != 0 && receivedСode[0] != calculatedСode[0])  // single error
+                    {
+                        DebugMessageEvent("Single error detected.");
+                        char bit = message[difference - 1];
+                        message = message.Remove(difference - 1, 1);
+                        message = message.Insert(difference - 1, (bit == '1' ? '0' : '1').ToString());
+
+                        DebugMessageEvent("Message after recovery:");
+                    }
+                    else if (difference != 0 && receivedСode[0] == calculatedСode[0]) // double error
+                    {
+                        DebugMessageEvent("Double error detected! The message cannot be corrected", "red");
+                        ReceiveMessageEvent(message[..length]);
+                        return;
+                    }
+                    else
+                    {
+                        DebugMessageEvent("No errors found:");
+                    }
+                    
+                    if (errorPositions[0] is not null && errorPositions[1] is null)
+                    {
+                        firstError = (int)errorPositions[0];
+                        DebugMessageEvent(message[..(firstError + 1)], "black", false);
+                        DebugMessageEvent(message[(firstError + 1)..(firstError + 2)], "green", false);
+                        DebugMessageEvent(message[(firstError + 2)..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                    }
+                    else
+                    {
+                        DebugMessageEvent(message[..this.frameLength], "black", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[this.frameLength..(this.frameLength + 1)], "orange", false);
+                        DebugMessageEvent(":", "black", false);
+                        DebugMessageEvent(message[(this.frameLength + 1)..], "green");
+                    }
+                    ReceiveMessageEvent(message[..length]);
+                    message = string.Empty;
+                    len = string.Empty;
                 }
-                else if (difference != 0 && receivedСode[0] == calculatedСode[0]) // double error
+                catch (Exception ex)
                 {
-                    DebugMessageEvent("Double error detected!", "red");
-                    DebugMessageEvent("The message will not be displayed in the \"Output\" window.", "red");
-                }
-                else
-                {
-                    DebugMessageEvent("No errors found: " + message[..this.frameLength]);
-                    ReceiveMessageEvent(message[..this.frameLength] + Environment.NewLine);
+                    //ErrorEvent(ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                ErrorEvent(ex.Message);
-            }
-
-            
         }
 
         public static string Reverse(string s)
@@ -174,7 +244,13 @@ namespace com_ports_communication
 
         private void ReceivedTest(string mes)
         {
+            byte[] data = new byte[_serialPort.BytesToRead];
+            _serialPort.Read(data, 0, data.Length);
+
             string message = DeBitStuffing(mes);
+            string len = message[^5..];
+            int length = Convert.ToInt32(len, 2);
+            message = message[..^5];
             int?[] errorPositions = new int?[] { null, null };
             message = GenerateError(message, ref errorPositions);
 
@@ -185,7 +261,7 @@ namespace com_ports_communication
                 {
                     firstError = (int)errorPositions[0];
                     secondError = (int)errorPositions[1];
-                    
+
                 }
                 else
                 {
@@ -252,7 +328,7 @@ namespace com_ports_communication
                 DebugMessageEvent(message[..(difference - 1)], "black", false);
                 DebugMessageEvent(message[(difference - 1)..difference], "green", false);
                 DebugMessageEvent(message[difference..this.frameLength], "black");
-                ReceiveMessageEvent(message[..this.frameLength] + Environment.NewLine);
+                ReceiveMessageEvent(message[..length] + Environment.NewLine);
             }
             else if (difference != 0 && receivedСode[0] == calculatedСode[0]) // double error
             {
@@ -262,8 +338,10 @@ namespace com_ports_communication
             else
             {
                 DebugMessageEvent("No errors found: " + message[..this.frameLength]);
-                ReceiveMessageEvent(message[..this.frameLength] + Environment.NewLine);
+                ReceiveMessageEvent(message[..length] + Environment.NewLine);
             }
+            message = string.Empty;
+            len = string.Empty;
         }
 
         private string GenerateError(string message, ref int?[] errorPositions)
@@ -331,33 +409,40 @@ namespace com_ports_communication
             int countOfFrames = (int)Math.Ceiling((double)message.Length / frameLength);
             while (countOfFrames != 0)
             {
-                int length = message.Length;
-                string len = Convert.ToString(length, 2);
-                len = len.PadLeft(frameLength, '0');
                 string currentFrame = countOfFrames > 1 ? message[..this.frameLength] : message;
                 message = message[currentFrame.Length..];
+                int length = currentFrame.Length;
+                string len = Convert.ToString(length, 2);
+                len = len.PadLeft(5, '0');
                 currentFrame = GenerateHammingCode(currentFrame);
                 DebugMessageEvent("Sent message:\r\n" + currentFrame[..this.frameLength], "black", false);
                 DebugMessageEvent(":", "black", false);
                 DebugMessageEvent(currentFrame[this.frameLength..(this.frameLength + 1)], "orange", false);
                 DebugMessageEvent(":", "black", false);
                 DebugMessageEvent(currentFrame[(this.frameLength + 1)..], "green");
+                currentFrame += len;
                 currentFrame = BitStuffing(currentFrame);
                 try
                 {
                     byte[] data = Encoding.Unicode.GetBytes(currentFrame);
                     _serialPort.Write(data, 0, data.Length);
                     //ReceivedTest(currentFrame);
-                    SendMessageEvent(currentFrame);
+                    
+                    MessageHandler tempAction = Volatile.Read(ref SendMessageEvent);
+                    if (tempAction != null) tempAction(currentFrame);
+                    Thread.Sleep(200);
                 }
                 catch (Exception ex)
                 {
                     ErrorEvent(ex.Message);
                 }
 
-                Thread.Sleep(1);
+                
                 countOfFrames--;
             }
+
+            byte[] dataa = Encoding.Unicode.GetBytes(Environment.NewLine);
+            _serialPort.Write(dataa, 0, dataa.Length);
         }
 
         private string GenerateHammingCode(string frame)
