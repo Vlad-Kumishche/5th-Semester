@@ -34,7 +34,7 @@ namespace com_ports_communication
             {
                 port.OpenPort("COM1", BaudRate);
                 DebugMessageHandler("COM1 is open");
-                DebugMessageHandler("Flag: 00011001");
+                //DebugMessageHandler("Flag: 00011001");
             }
             catch
             {
@@ -42,7 +42,7 @@ namespace com_ports_communication
                 {
                     port.OpenPort("COM2", BaudRate);
                     DebugMessageHandler("COM2 is open");
-                    DebugMessageHandler("Flag: 00011001");
+                    //DebugMessageHandler("Flag: 00011001");
                 }
                 catch
                 {
@@ -86,6 +86,7 @@ namespace com_ports_communication
                 "black" => Color.Black,
                 "red" => Color.Red,
                 "green" => Color.Green,
+                "orange" => Color.DarkOrange,
                 _ => throw new ArgumentOutOfRangeException(nameof(color)),
             };
 
