@@ -70,8 +70,13 @@ namespace com_ports_communication
             Input.Clear();
         }
 
-        private void ReceiveMessageHandler(string message)
+        private void ReceiveMessageHandler(string message, int charsToDelete = 0)
         {
+            if (charsToDelete != 0)
+            {
+                Output.Text = Output.Text[..^charsToDelete];
+            }
+
             Output.Text += message;
             Output.SelectionStart = Output.Text.Length;
             Output.ScrollToCaret();
