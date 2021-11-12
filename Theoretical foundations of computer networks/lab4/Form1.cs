@@ -16,7 +16,7 @@ namespace com_ports_communication
         public ComForm()
         {
             InitializeComponent();
-
+            len = 0;
             port = new ComPort();
             port.SendMessageEvent += SendMessageHandler;
             port.ReceiveMessageEvent += ReceiveMessageHandler;
@@ -70,13 +70,14 @@ namespace com_ports_communication
             Input.Clear();
         }
 
-        private void ReceiveMessageHandler(string message, int charsToDelete = 0)
+        private int len;
+        private void ReceiveMessageHandler(string message, bool delete = false)
         {
-            if (charsToDelete != 0)
+            if (delete)
             {
-                Output.Text = Output.Text[..^charsToDelete];
+                Output.Text = Output.Text[..^len];
             }
-
+            len = message.Length;
             Output.Text += message;
             Output.SelectionStart = Output.Text.Length;
             Output.ScrollToCaret();

@@ -13,7 +13,7 @@ namespace com_ports_communication
     {
         SerialPort _serialPort;
         public delegate void SendMessageHandler(string message = "");
-        public delegate void ReceiveMessageHandler(string message = "", int charsToDelete = 0);
+        public delegate void ReceiveMessageHandler(string message = "", bool delete = false);
         public delegate void DebugMessageHandler(string message = "", string color = "black", bool AddNewLine = true);
         public delegate void ErrorHandler(string message);
         public event SendMessageHandler SendMessageEvent;
@@ -71,20 +71,21 @@ namespace com_ports_communication
                 _serialPort.Read(data, 0, data.Length);
                 string message = Encoding.Unicode.GetString(data);
 
-                if (message.Length == 5)
+                if (message == endOfMessage)
                 {
-                    int charsToDelete = Convert.ToInt32(message, 2);
-                    ReceiveMessageEvent(this.endOfMessage, charsToDelete);
-                }
-                else if (message == this.JAM)
-                {
-                    ReceiveMessageEvent(string.Empty, this.frameLength);
-                }
-                else
-                {
-                    
                     ReceiveMessageEvent(message);
+                    return;
                 }
+                if (message == this.JAM)
+                {
+                    ReceiveMessageEvent(string.Empty, true);
+                    return;
+                }
+
+                string len = message[^5..];
+                int length = Convert.ToInt32(len, 2);
+                message = message[..^5];
+                ReceiveMessageEvent(message[..length]);
             }
             catch (Exception ex)
             {
@@ -108,13 +109,15 @@ namespace com_ports_communication
 
             int countOfFrames = (int)Math.Ceiling((double)message.Length / this.frameLength);
             string currentFrame = string.Empty;
-            int realLenthOfLastFrame = 0;
             while (countOfFrames != 0)
             {
                 currentFrame = countOfFrames > 1 ? message[..this.frameLength] : message;
-                realLenthOfLastFrame = currentFrame.Length;
+                int length = currentFrame.Length;
+                string len = Convert.ToString(length, 2);
+                len = len.PadLeft(5, '0');
                 message = message[currentFrame.Length..];
                 currentFrame = currentFrame.PadRight(this.frameLength, '0');
+                currentFrame += len;
                 if (!CSMA_CD_Send_Algorithm(currentFrame))
                 {
                     DebugMessageEvent();
@@ -125,16 +128,13 @@ namespace com_ports_communication
                 countOfFrames--;
             }
 
-            int charsToDelete = this.frameLength - realLenthOfLastFrame;
-            string extraFrame = Convert.ToString(charsToDelete, 2);
-            extraFrame = extraFrame.PadLeft(5, '0');
-            SendData(extraFrame);
+            SendData(endOfMessage);
         }
 
         private bool CSMA_CD_Send_Algorithm(string frame)
         {
             int attemptsCounter = 0;
-            DebugMessageEvent(frame + ":", "black", false);
+            DebugMessageEvent(frame[..^5] + ":", "black", false);
             while (true)
             {
                 while (isChannelBusy()) { /*wait until the channel isn't busy*/ }
