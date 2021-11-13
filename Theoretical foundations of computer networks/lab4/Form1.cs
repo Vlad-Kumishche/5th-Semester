@@ -13,9 +13,11 @@ namespace com_ports_communication
     public partial class ComForm : Form
     {
         ComPort port;
+        private int lenghtOfLastMessage;
         public ComForm()
         {
             InitializeComponent();
+            lenghtOfLastMessage = 0;
 
             port = new ComPort();
             port.SendMessageEvent += SendMessageHandler;
@@ -34,7 +36,6 @@ namespace com_ports_communication
             {
                 port.OpenPort("COM1", BaudRate);
                 DebugMessageHandler("COM1 is open");
-                //DebugMessageHandler("Flag: 00011001");
             }
             catch
             {
@@ -42,7 +43,6 @@ namespace com_ports_communication
                 {
                     port.OpenPort("COM2", BaudRate);
                     DebugMessageHandler("COM2 is open");
-                    //DebugMessageHandler("Flag: 00011001");
                 }
                 catch
                 {
@@ -72,8 +72,13 @@ namespace com_ports_communication
             Input.Clear();
         }
 
-        private void ReceiveMessageHandler(string message)
+        private void ReceiveMessageHandler(string message, bool delete = false)
         {
+            if (delete)
+            {
+                Output.Text = Output.Text[..^lenghtOfLastMessage];
+            }
+            lenghtOfLastMessage = message.Length;
             Output.Text += message;
             Output.SelectionStart = Output.Text.Length;
             Output.ScrollToCaret();
@@ -123,6 +128,7 @@ namespace com_ports_communication
             Input.Text = "";
             Output.Text = "";
             ControlAndDebug.Text = "";
+            DebugMessageHandler(port.Name + " is open");
         }
     }
 }
