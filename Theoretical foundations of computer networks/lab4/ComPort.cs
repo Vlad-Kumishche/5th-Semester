@@ -44,7 +44,7 @@ namespace com_ports_communication
         {
             this.frameLength = 25;
             this.maxAttempts = 15;
-            this.collisionWindowDuration = 20;
+            this.collisionWindowDuration = 33;
             this.collisionSymbol = "*";
             this.JAM = "*";
             this.endOfMessage = Environment.NewLine;
@@ -160,6 +160,7 @@ namespace com_ports_communication
                 }
             }
         }
+
         private void SendData(string frame)
         {
             try

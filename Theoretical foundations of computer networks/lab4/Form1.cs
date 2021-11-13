@@ -13,10 +13,12 @@ namespace com_ports_communication
     public partial class ComForm : Form
     {
         ComPort port;
+        private int lenghtOfLastMessage;
         public ComForm()
         {
             InitializeComponent();
-            len = 0;
+            lenghtOfLastMessage = 0;
+
             port = new ComPort();
             port.SendMessageEvent += SendMessageHandler;
             port.ReceiveMessageEvent += ReceiveMessageHandler;
@@ -70,14 +72,13 @@ namespace com_ports_communication
             Input.Clear();
         }
 
-        private int len;
         private void ReceiveMessageHandler(string message, bool delete = false)
         {
             if (delete)
             {
-                Output.Text = Output.Text[..^len];
+                Output.Text = Output.Text[..^lenghtOfLastMessage];
             }
-            len = message.Length;
+            lenghtOfLastMessage = message.Length;
             Output.Text += message;
             Output.SelectionStart = Output.Text.Length;
             Output.ScrollToCaret();
@@ -127,6 +128,7 @@ namespace com_ports_communication
             Input.Text = "";
             Output.Text = "";
             ControlAndDebug.Text = "";
+            DebugMessageHandler(port.Name + " is open");
         }
     }
 }
